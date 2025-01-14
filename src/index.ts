@@ -8,19 +8,23 @@ import AdmZip from 'adm-zip';
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { chunk } from 'lodash-es';
-import { DateTime } from 'luxon';
 import Model from "./model";
 import { config } from "./config";
+import stopRouter from "./router/stop";
+import predictionRouter from "./router/prediction";
 
 const client = new DynamoDB({});
 const ddbClient = DynamoDBDocument.from(client);
+export const model = new Model(ddbClient);
 
 const app = new Hono();
-const model = new Model(ddbClient);
 
 app.get('/', (c) => {
-  return c.text('Hello Hono!');
+  return c.text('Hello from TransitPulse!');
 });
+
+app.route('/stop', stopRouter);
+app.route('/prediction', predictionRouter);
 
 app.post('/gtfs',
   zValidator(
@@ -72,68 +76,5 @@ app.post('/gtfs',
 
     return c.json({ name, stops: stops.length });
   });
-
-app.get('/stop/by-location/:lat/:lon',
-  zValidator(
-    'param',
-    z.object({
-      lat: z.coerce.number().min(-90).max(90),
-      lon: z.coerce.number().min(-180).max(180)
-    })
-  ),
-  async (c) => {
-    const { lat, lon } = c.req.valid('param');
-    const stops = await model.getStopByLatLon(lat, lon);
-
-    return c.json({
-      lat,
-      lon,
-      stops: stops.slice(0, 4),
-      scanCount: stops.length
-    });
-  }
-);
-
-app.get('/prediction/by-location/:lat/:lon',
-  zValidator(
-    'param',
-    z.object({
-      lat: z.coerce.number().min(-90).max(90),
-      lon: z.coerce.number().min(-180).max(180)
-    })
-  ),
-  async (c) => {
-    const { lat, lon } = c.req.valid('param');
-    const stops = await model.getStopByLatLon(lat, lon);
-    const stopIds = stops.slice(0, 4).map(i => ({ provider: i.id.split("#")[0], stopCode: i.stopCode }));
-
-    const scmtdStops = stopIds.filter(i => i.provider == "scmtd").map(i => i.stopCode);
-
-    const res = await fetch(`https://rt.scmetro.org/bustime/api/v3/getpredictions?key=${Resource.ScmtdKey.value}&stpid=${scmtdStops.join(",")}&tmres=s&format=json`);
-    const result = await res.json();
-    const now = DateTime.now();
-
-    const prediction = result['bustime-response']['prd'].map((i: any) => {
-      const predTime = DateTime.fromFormat(i.prdtm, 'yyyyMMdd HH:mm:ss', {
-        zone: 'America/Los_Angeles'
-      });
-
-      return {
-        route: i.rt,
-        routeDirection: i.rtdir,
-        predictionTime: predTime.toString(),
-        timeDiff: Math.floor(predTime.diff(now, "minute").minutes),
-        stopId: i.stpid,
-        stopName: i.stpnm
-      };
-    });
-
-    return c.json({
-      lat,
-      lon,
-      prediction
-    });
-  }
-);
 
 export const handler = handle(app);
