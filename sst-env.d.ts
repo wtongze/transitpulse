@@ -5,6 +5,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "GtfsBucket": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
+    "GtfsBucketHandler": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "Hono": {
       "name": string
       "type": "sst.aws.Function"
