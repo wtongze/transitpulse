@@ -1,0 +1,32 @@
+{
+  "name": "transitpulse",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
+    "deploy": "run-s build zip update",
+    "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
+    "zip": "zip -j lambda.zip dist/index.js"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/aws-lambda": "8.10.147",
+    "@types/lodash-es": "^4.17.12",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^22.10.5",
+    "esbuild": "^0.21.4",
+    "npm-run-all2": "^6.2.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.726.1",
+    "@aws-sdk/lib-dynamodb": "^3.726.1",
+    "@hono/zod-validator": "^0.4.2",
+    "adm-zip": "^0.5.16",
+    "h3-js": "^4.1.0",
+    "haversine-distance": "^1.2.3",
+    "hono": "^4.6.16",
+    "lodash-es": "^4.17.21",
+    "luxon": "^3.5.0",
+    "sst": "3.5.6",
+    "zod": "^3.24.1"
+  }
+}
