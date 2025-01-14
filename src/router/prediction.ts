@@ -27,7 +27,7 @@ predictionRouter.get(
         const result = await res.json();
         const now = DateTime.now();
 
-        const prediction = result['bustime-response']['prd'].map((i: any) => {
+        const prediction = (result['bustime-response']['prd'] || []).map((i: any) => {
             const predTime = DateTime.fromFormat(i.prdtm, 'yyyyMMdd HH:mm:ss', {
                 zone: 'America/Los_Angeles'
             });
