@@ -17,7 +17,8 @@ export default $config({
     const table = new sst.aws.Dynamo("Table", {
       fields: {
         id: "string",
-        stopGeoHash: "string"
+        stopGeoHash: "string",
+        provider: "string"
       },
       primaryIndex: {
         hashKey: "id"
@@ -26,6 +27,9 @@ export default $config({
         StopGeoHashIndex: {
           hashKey: "stopGeoHash",
           rangeKey: "id"
+        },
+        ProviderIndex: {
+          hashKey: "provider"
         }
       }
     });

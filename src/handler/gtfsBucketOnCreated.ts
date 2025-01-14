@@ -42,12 +42,13 @@ export const handler: Handler<S3Event> = async (event) => {
             try {
                 const geoHash = h3.latLngToCell(lat, lon, config.H3_GEOHASH_RESOLUTION);
                 return {
-                    id: `${provider}#stop#${token[0]}`,
+                    id: `stop#${provider}#${token[0]}`,
                     stopCode: token[1] || "",
                     stopName: token[2] || "",
                     stopLat: lat,
                     stopLon: lon,
-                    stopGeoHash: geoHash
+                    stopGeoHash: geoHash,
+                    provider: provider
                 };
             } catch {
                 console.error(lat, lon, token);
