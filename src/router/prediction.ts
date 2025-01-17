@@ -19,9 +19,11 @@ predictionRouter.get(
     async (c) => {
         const { lat, lon } = c.req.valid('param');
         const stops = await model.getStopByLatLon(lat, lon);
-        const stopIds = stops.slice(0, 4).map(i => ({ provider: i.id.split("#")[0], stopCode: i.stopCode }));
 
-        const scmtdStops = stopIds.filter(i => i.provider == "scmtd").map(i => i.stopCode);
+        const scmtdStops = stops
+            .filter(i => i.provider == "scmtd")
+            .map(i => i.stopCode)
+            .splice(0, 4);
 
         const res = await fetch(`https://rt.scmetro.org/bustime/api/v3/getpredictions?key=${Resource.ScmtdKey.value}&stpid=${scmtdStops.join(",")}&tmres=s&format=json`);
         const result = await res.json();

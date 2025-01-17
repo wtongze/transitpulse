@@ -22,7 +22,7 @@ stopRouter.get(
         return c.json({
             lat,
             lon,
-            stops: stops.slice(0, config.MAX_STOPS_RETURNED),
+            stops: stops,
             scanCount: stops.length
         });
     }
